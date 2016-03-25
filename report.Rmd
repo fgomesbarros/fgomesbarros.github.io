@@ -9,17 +9,106 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-# 1. Introduction  
+## Introduction  
 
+Using devices such as Jawbone Up, Nike FuelBand, and Fitbit it is now possible to collect a large amount of data about personal activity relatively inexpensively. These type of devices are part of the quantified self movement – a group of enthusiasts who take measurements about themselves regularly to improve their health, to find patterns in their behavior, or because they are tech geeks. One thing that people regularly do is quantify how much of a particular activity they do, but they rarely quantify how well they do it. 
 
-# 2. Question
+In this project, we will use data from accelerometers on the belt, forearm, arm, and dumbell of 6 participants. They were asked to perform barbell lifts correctly and incorrectly in 5 different ways.
 
-# 3. Data Selection
+The goal of your project is to predict the manner in which they did the exercise. This is the "classe" variable in the training set.
 
-## 3.1 Preprocessing Data
+## R Packages Needed
 
-# 4. Data Modeling
+In this project, we will use the following R packages: dplyr, caret, randomForest, corrplot and rattle.
+```{r, message=FALSE}
+# Loads R packages
+library(dplyr)
+library(caret)
+library(randomForest)
+library(corrplot)
+library(rattle)
+```
 
-# 5. Predictions for Test Data Set
+##  Data Selection
 
-# 6. Conclusions
+### Getting data
+
+```{r}
+# Sets variables
+training.url<- "https://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv"
+testing.url <- "https://d396qusza40orc.cloudfront.net/predmachlearn/pml-testing.csv"
+training.file <- "./data/pml-training.csv"
+testing.file <- "./data/pml-testing.csv"
+
+# Downloads raw data files
+# if (!file.exists("./data")) {
+#   dir.create("./data")
+# 
+# if (!file.exists(training.file)) {
+#   download.file(training.url, destfile=training.file, method="curl")
+# }
+# if (!file.exists(testing.file)) {
+#   download.file(testing.url, destfile=testing.file, method="curl")
+# }
+```
+
+### Preprocessing data
+
+#### Reading raw data
+```{r}
+# Reads rawdata files
+training.raw <- read.csv(file = training.file)
+testing.raw <- read.csv(file = testing.file)
+
+dim(training.raw)
+dim(testing.raw)
+```
+
+The training dataset contains `r dim(training.raw)[2]` variables and `r dim(training.raw)[1]` observations, while the testing dataset contains `r dim(testing.raw)[2]` variables too, but less observations: `r dim(testing.raw)[2]`.
+
+The variable *classe* is the outcome to be predicted by the model. It has five possible values:
+
+```{r}
+unique(training.raw$classe)
+```
+
+#### Cleaning data
+```{r}
+# Removes variables containing all NA missing values.
+training <- training.raw[, colSums(is.na(training.raw)) == 0]
+testing <- testing.raw[, colSums(is.na(testing.raw)) == 0]
+
+# Removes variables which don't correspond to accelerometer measurements.
+unused.col <- grepl("^X|user|timestamp|window", names(training))
+training <- training[, !unused.col]
+unused.col <- grepl("^X|user|timestamp|window", names(testing))
+testing <- testing[, !unused.col]
+
+# Saves values of classe variable
+classe <- training$classe
+
+# Remove non-quantitative variables (also removes classe in training data)
+training <- training[, sapply(training, is.numeric)]
+testing <- testing[, sapply(testing, is.numeric)]
+
+# Restores values of classe variable to training data set.
+training$classe <- classe
+
+# Gets the dimensions of the datasets
+dim(training)
+dim(testing)
+
+# Shows the training variables not contained by testing dataset
+names(training)[names(training) != names(testing)]
+
+# Shows the testing variables not contained by training dataset
+names(testing)[names(testing) != names(training)]
+```
+
+Now both datasets have `r dim(training)[2]` variables with the same number of observations. They differ in two variables: training contains *classe* variable while testing contains the *problem_id* variable.
+
+## Data Modeling
+
+## Predictions for Test Data Set
+
+## Conclusions
