@@ -1,0 +1,25 @@
+---
+title: "Practical Machine Learning Project - Wearable Computing"
+author: "Fabio Barros"
+date: "25 de março de 2016"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# 1. Introduction  
+
+
+# 2. Question
+
+# 3. Data Selection
+
+## 3.1 Preprocessing Data
+
+# 4. Data Modeling
+
+# 5. Predictions for Test Data Set
+
+# 6. Conclusions
