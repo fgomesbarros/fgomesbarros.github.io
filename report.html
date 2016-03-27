@@ -116,25 +116,22 @@ $(document).ready(function () {
 
 
 <div id="introduction" class="section level2">
-<h2>Introduction</h2>
+<h2>1. Introduction</h2>
 <p>Using devices such as Jawbone Up, Nike FuelBand, and Fitbit it is now possible to collect a large amount of data about personal activity relatively inexpensively. These type of devices are part of the quantified self movement – a group of enthusiasts who take measurements about themselves regularly to improve their health, to find patterns in their behavior, or because they are tech geeks. One thing that people regularly do is quantify how much of a particular activity they do, but they rarely quantify how well they do it.</p>
 <p>In this project, we will use data from accelerometers on the belt, forearm, arm, and dumbell of 6 participants. They were asked to perform barbell lifts correctly and incorrectly in 5 different ways.</p>
 <p>The goal of your project is to predict the manner in which they did the exercise. This is the “classe” variable in the training set.</p>
-</div>
-<div id="r-packages-needed" class="section level2">
-<h2>R Packages Needed</h2>
-<p>In this project, we will use the following R packages: dplyr, caret, randomForest, corrplot and rattle.</p>
+<div id="r-packages" class="section level3">
+<h3>1.1 R Packages</h3>
+<p>In this project, we will use the following R packages: caret, randomForest, corrplot and rattle.</p>
 <pre class="r"><code># Loads R packages
-library(dplyr)
 library(caret)
 library(randomForest)
 library(corrplot)
 library(rattle)</code></pre>
 </div>
-<div id="data-selection" class="section level2">
-<h2>Data Selection</h2>
-<div id="getting-data" class="section level3">
-<h3>Getting data</h3>
+</div>
+<div id="data-collection" class="section level2">
+<h2>2. Data Collection</h2>
 <pre class="r"><code># Sets variables
 training.url&lt;- &quot;https://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv&quot;
 testing.url &lt;- &quot;https://d396qusza40orc.cloudfront.net/predmachlearn/pml-testing.csv&quot;
@@ -150,16 +147,15 @@ testing.file &lt;- &quot;./data/pml-testing.csv&quot;
 # }
 # if (!file.exists(testing.file)) {
 #   download.file(testing.url, destfile=testing.file, method=&quot;curl&quot;)
-# }</code></pre>
-</div>
-<div id="preprocessing-data" class="section level3">
-<h3>Preprocessing data</h3>
-<div id="reading-raw-data" class="section level4">
-<h4>Reading raw data</h4>
-<pre class="r"><code># Reads raw data files
-training.raw &lt;- read.csv(file = training.file)
-testing.raw &lt;- read.csv(file = testing.file)
+# }
 
+# Reads rawdata files
+training.raw &lt;- read.csv(file = training.file, na.strings=c(&quot;NA&quot;,&quot;#DIV/0!&quot;,&quot;&quot;), 
+                         stringsAsFactors =  FALSE)
+testing.raw &lt;- read.csv(file = testing.file, na.strings=c(&quot;NA&quot;,&quot;#DIV/0!&quot;,&quot;&quot;), 
+                        stringsAsFactors =  FALSE)
+
+# Get datasets dimensions
 dim(training.raw)</code></pre>
 <pre><code>## [1] 19622   160</code></pre>
 <pre class="r"><code>dim(testing.raw)</code></pre>
@@ -167,51 +163,93 @@ dim(training.raw)</code></pre>
 <p>The training dataset contains 160 variables and 19622 observations, while the testing dataset contains 160 variables too, but less observations: 160.</p>
 <p>The variable <em>classe</em> is the outcome to be predicted by the model. It has five possible values:</p>
 <pre class="r"><code>unique(training.raw$classe)</code></pre>
-<pre><code>## [1] A B C D E
-## Levels: A B C D E</code></pre>
+<pre><code>## [1] &quot;A&quot; &quot;B&quot; &quot;C&quot; &quot;D&quot; &quot;E&quot;</code></pre>
 </div>
-<div id="cleaning-data" class="section level4">
-<h4>Cleaning data</h4>
-<pre class="r"><code># Removes variables containing all NA missing values.
-training &lt;- training.raw[, colSums(is.na(training.raw)) == 0]
-testing &lt;- testing.raw[, colSums(is.na(testing.raw)) == 0]
+<div id="data-preparation-and-exploration" class="section level2">
+<h2>3. Data Preparation and Exploration</h2>
+<div id="cleaning-data" class="section level3">
+<h3>3.1 Cleaning Data</h3>
+<p><strong>a) Training dataset</strong></p>
+<pre class="r"><code># Removes variables which don't correspond to accelerometer measurements.
+unused.col &lt;- grepl(&quot;^X|user|timestamp|window&quot;, names(training.raw))
+training &lt;- training.raw[, !unused.col]
 
-# Removes variables which don't correspond to accelerometer measurements.
-unused.col &lt;- grepl(&quot;^X|user|timestamp|window&quot;, names(training))
-training &lt;- training[, !unused.col]
-unused.col &lt;- grepl(&quot;^X|user|timestamp|window&quot;, names(testing))
-testing &lt;- testing[, !unused.col]
+# Removes variables containing all NA missing values.
+training &lt;- training[, colSums(is.na(training)) == 0]
 
-# Saves the classe variable
+# Saves values of classe variable
 classe &lt;- training$classe
 
-# Remove non-quantitative variables (also removes classe in training data)
-training &lt;- training[, sapply(training, is.numeric)]
-testing &lt;- testing[, sapply(testing, is.numeric)]
+# Removes non-quantitative variables (also removes classe variable in training data)
+training &lt;- training[, (sapply(training, is.integer) | sapply(training, is.numeric))] 
 
-# Restores the classe variable to training data set.
-training$classe &lt;- classe
+# Converts integer variables to numeric
+training &lt;- as.data.frame(apply(training, 2, as.numeric))
 
-# Gets the dimensions of the datasets
+# Restores values of classe variable to training data set.
+training$classe &lt;- factor(classe)
+
+# Gets the dimension of dataset
 dim(training)</code></pre>
 <pre><code>## [1] 19622    53</code></pre>
-<pre class="r"><code>dim(testing)</code></pre>
-<pre><code>## [1] 20 53</code></pre>
-<pre class="r"><code># Shows the training variables not contained by testing dataset
-names(training)[names(training) != names(testing)]</code></pre>
-<pre><code>## [1] &quot;classe&quot;</code></pre>
-<pre class="r"><code># Shows the testing variables not contained by training dataset
-names(testing)[names(testing) != names(training)]</code></pre>
-<pre><code>## [1] &quot;problem_id&quot;</code></pre>
-<p>Now both datasets have 53 variables and continue with the same number of observations. They differ in two variables: training contains <em>classe</em> variable while testing contains the <em>problem_id</em> variable.</p>
+<p><strong>b) Testing dataset</strong></p>
+<pre class="r"><code># Removes ununsed variables of testing dataset
+testing &lt;- testing.raw[, names(testing.raw) %in% names(training)]
+
+# Gets the dimension of dataset
+dim(testing)</code></pre>
+<pre><code>## [1] 20 52</code></pre>
 </div>
+<div id="preprocessing-data" class="section level3">
+<h3>3.2 Preprocessing data</h3>
+<pre class="r"><code># Sets seed
+set.seed(13173)
+
+# Normalizes data
+pre.proc &lt;- preProcess(training[, -53], method = c(&quot;center&quot;, &quot;scale&quot;))
+training &lt;- predict(pre.proc, training)
+testing &lt;- predict(pre.proc, testing)
+
+# Slices the training data
+in.train &lt;- createDataPartition(y = training$classe, p = 0.7, list = FALSE)
+
+# Creates a cross-validation set
+validating &lt;- training[-in.train, ] 
+dim(validating)</code></pre>
+<pre><code>## [1] 5885   53</code></pre>
+<pre class="r"><code># Recreates the training set, removing observations of validating set 
+training &lt;- training[in.train, ]
+dim(training)</code></pre>
+<pre><code>## [1] 13737    53</code></pre>
+<pre class="r"><code># Shows datasets heads
+head(training[, c(1:5, 53)])</code></pre>
+<pre><code>##   roll_belt pitch_belt   yaw_belt total_accel_belt gyros_belt_x classe
+## 1 -1.003935  0.3473953 -0.8739522         -1.07366   0.02697255      A
+## 2 -1.003935  0.3473953 -0.8739522         -1.07366   0.12343758      A
+## 4 -1.002820  0.3465005 -0.8739522         -1.07366   0.12343758      A
+## 5 -1.002820  0.3473953 -0.8739522         -1.07366   0.12343758      A
+## 6 -1.003298  0.3469479 -0.8739522         -1.07366   0.12343758      A
+## 9 -1.003617  0.3514220 -0.8739522         -1.07366   0.12343758      A</code></pre>
+<pre class="r"><code>head(validating[, c(1:5, 53)])</code></pre>
+<pre><code>##    roll_belt pitch_belt   yaw_belt total_accel_belt gyros_belt_x classe
+## 3  -1.003776  0.3473953 -0.8739522         -1.07366   0.02697255      A
+## 7  -1.003776  0.3482901 -0.8739522         -1.07366   0.12343758      A
+## 8  -1.003776  0.3500797 -0.8739522         -1.07366   0.12343758      A
+## 10 -1.003298  0.3518694 -0.8739522         -1.07366   0.17167009      A
+## 15 -1.003298  0.3532116 -0.8739522         -1.07366   0.02697255      A
+## 16 -1.002820  0.3509745 -0.8739522         -1.07366   0.02697255      A</code></pre>
+<pre class="r"><code>head(testing[, 1:5])</code></pre>
+<pre><code>##    roll_belt  pitch_belt    yaw_belt total_accel_belt gyros_belt_x
+## 1  0.9337461  1.19432812  0.06780959        1.1220673   -2.3846531
+## 2 -1.0101504  0.20422655 -0.81617538       -0.9444997   -0.2624225
+## 3 -1.0125408  0.06776881 -0.81197343       -0.8153392    0.2681351
+## 4  0.9656184 -1.87485252  1.81949698        0.7345860    0.5575302
+## 5 -1.0048915  0.13532658 -0.81302392       -1.0736601    0.1716701
+## 6 -1.1207476  0.05747856 -0.80356953       -0.9444997    0.5092977</code></pre>
 </div>
 </div>
 <div id="data-modeling" class="section level2">
-<h2>Data Modeling</h2>
-</div>
-<div id="predictions-for-test-data-set" class="section level2">
-<h2>Predictions for Test Data Set</h2>
+<h2>4. Data Modeling</h2>
 </div>
 <div id="conclusions" class="section level2">
 <h2>Conclusions</h2>
