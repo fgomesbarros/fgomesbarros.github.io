@@ -19,17 +19,16 @@ The goal of your project is to predict the manner in which they did the exercise
 
 ### 1.1 R Packages 
 
-In this project, we will use the following R packages: caret, randomForest, corrplot and rattle.
+In this project, we will use *caret* and *randomForest* packages.
 ```{r, message=FALSE}
 # Loads R packages
 library(caret)
 library(randomForest)
-library(corrplot)
-library(rattle)
 ```
 
 ##  2. Data Collection
 
+First of all, we will download the data files, store them in the "data" folder and load datasets into the *training* and *testing* variables. 
 ```{r}
 # Sets variables
 trainingURL<- "https://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv"
@@ -59,7 +58,7 @@ dim(training)
 dim(testing)
 ```
 
-The training dataset contains `r dim(training)[2]` variables and `r dim(training)[1]` observations, while the testing dataset contains `r dim(testing)[2]` variables too, but less observations: `r dim(testing)[2]`.
+The *training* dataset contains `r dim(training)[2]` variables and `r dim(training)[1]` observations, while the *testing* dataset contains `r dim(testing)[2]` variables too, but less observations: `r dim(testing)[2]`.
 
 The variable *classe* is the outcome to be predicted by the model. It has five possible values:
 
@@ -69,12 +68,14 @@ unique(training$classe)
 
 ## 3. Data Preparation and Exploration 
 
+Now, it's time to prepare and explore the collected data, cleaning and preprocessing it in order to be ready for modeling.
+
 ### 3.1 Cleaning Data
 
 **a) Training dataset**
 ```{r}
 # Removes variables which don't correspond to accelerometer measurements.
-unusedCol <- grepl("^X|user|timestamp", names(training))
+unusedCol <- grepl("^X|user|timestamp|window", names(training))
 training <- training[, !unusedCol]
 
 # Removes variables containing all NA missing values.
@@ -95,8 +96,12 @@ training$classe <- factor(classe)
 # Gets the dimension of dataset
 dim(training)
 ```
+Now, the number of variables of *training* dataset was reduced to: `r dim(training)[2]`.
 
 **b) Testing dataset**
+
+Likewise, the set of variables of *testing* dataset will be reduced. It will remain only the same variables contained in *training* dataset, except for the classe variable.
+
 ```{r}
 # Removes ununsed variables of testing dataset
 testing <- testing[, names(testing) %in% names(training)]
@@ -104,16 +109,16 @@ testing <- testing[, names(testing) %in% names(training)]
 # Gets the dimension of dataset
 dim(testing)
 ```
+The resultant number of variables of *testing* dataset was reduced to: `r dim(training)[2]`. 
+
 
 ### 3.2 Preprocessing data
+
+In this step, we will slice the *training* data, creating a new dataset called *validating*. We also preprocess all the datasets, normalizing them. 
+
 ```{r}
 # Sets seed
 set.seed(13173)
-
-# Normalizes data (the 53th column is the outcome)
-preProc <- preProcess(training[, -53], method = c("center", "scale"))
-training <- predict(preProc, training)
-testing <- predict(preProc, testing)
 
 # Slices the training data
 inTrain <- createDataPartition(y = training$classe, p = 0.7, list = FALSE)
@@ -122,9 +127,15 @@ inTrain <- createDataPartition(y = training$classe, p = 0.7, list = FALSE)
 validating <- training[-inTrain, ] 
 dim(validating)
 
-# Recreates the training set, removing observations of validating set 
+# Recreates the training set, removing observations of validating set.
 training <- training[inTrain, ]
 dim(training)
+
+# Normalizes all the data
+preProc <- preProcess(training[, -53], method = c("center", "scale")) # the 53th column is the outcome
+training <- predict(preProc, training)
+validating <- predict(preProc, validating)
+testing <- predict(preProc, testing)
 
 # Shows datasets heads
 head(training[, c(1:5, 53)])
@@ -132,7 +143,10 @@ head(validating[, c(1:5, 53)])
 head(testing[, 1:5])
 ```
 
+Now, the datasets are ready for the next step: data modeling.
+
 ## 4. Data Modeling
+
 
 ```{r}
 modelRF <- randomForest(classe ~ ., data = training)
