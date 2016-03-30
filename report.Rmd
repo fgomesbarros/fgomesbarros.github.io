@@ -80,6 +80,8 @@ training <- training[, !unusedCol]
 
 # Removes variables containing all NA missing values.
 training <- training[, colSums(is.na(training)) == 0]
+nearZero <- nearZeroVar(x = training, saveMetrics = TRUE)
+training <- training[, !nearZero$nzv]
 
 # Saves values of classe variable
 classe <- training$classe
@@ -118,10 +120,10 @@ In this step, we will slice the *training* data, creating a new dataset called *
 
 ```{r}
 # Sets seed
-set.seed(13173)
+set.seed(21)
 
 # Slices the training data
-inTrain <- createDataPartition(y = training$classe, p = 0.7, list = FALSE)
+inTrain <- createDataPartition(y = training$classe, p = 0.75, list = FALSE)
 
 # Creates a cross-validation set
 validating <- training[-inTrain, ] 
@@ -130,12 +132,6 @@ dim(validating)
 # Recreates the training set, removing observations of validating set.
 training <- training[inTrain, ]
 dim(training)
-
-# Normalizes all the data
-preProc <- preProcess(training[, -53], method = c("center", "scale")) # the 53th column is the outcome
-training <- predict(preProc, training)
-validating <- predict(preProc, validating)
-testing <- predict(preProc, testing)
 
 # Shows datasets heads
 head(training[, c(1:5, 53)])
