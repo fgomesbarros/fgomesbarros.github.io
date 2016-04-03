@@ -58,7 +58,7 @@ dim(training)
 dim(testing)
 ```
 
-The *training* dataset contains `r dim(training)[2]` variables and `r dim(training)[1]` observations, while the *testing* dataset contains `r dim(testing)[2]` variables too, but less observations: `r dim(testing)[2]`.
+The *training* dataset contains `r dim(training)[2]` variables and `r dim(training)[1]` observations, while the *testing* dataset contains `r dim(testing)[2]` variables too, but less observations: `r dim(testing)[1]`.
 
 The variable *classe* is the outcome to be predicted by the model. It has five possible values:
 
@@ -102,7 +102,7 @@ Now, the number of variables of *training* dataset was reduced to: `r dim(traini
 
 **b) Testing dataset**
 
-Likewise, the set of variables of *testing* dataset will be reduced. It will remain only the same variables contained in *training* dataset, except for the classe variable.
+Likewise, the set of variables of *testing* dataset will be reduced. It will remain only the same variables contained in *training* dataset, except for the *classe* variable.
 
 ```{r}
 # Removes ununsed variables of testing dataset
@@ -111,12 +111,12 @@ testing <- testing[, names(testing) %in% names(training)]
 # Gets the dimension of dataset
 dim(testing)
 ```
-The resultant number of variables of *testing* dataset was reduced to: `r dim(training)[2]`. 
+The resultant number of variables of *testing* dataset was reduced to: `r dim(testing)[2]`. 
 
 
 ### 3.2 Preprocessing data
 
-In this step, we will slice the *training* data, creating a new dataset called *validating*. We also preprocess all the datasets, normalizing them. 
+In this step, we will re-create *training* with the 75% of cases and create a new dataset  called *validating* with the remaining 25% of cases.
 
 ```{r}
 # Sets seed
@@ -139,15 +139,31 @@ head(validating[, c(1:5, 53)])
 head(testing[, 1:5])
 ```
 
-Now, the datasets are ready for the next step: data modeling.
+Now the datasets are ready for the next step: data modeling.
 
 ## 4. Data Modeling
 
+We will use *Random Forest* algorithm to predict the outcomes of *classe* variable.
 
 ```{r}
 modelRF <- randomForest(classe ~ ., data = training)
-predictions <- predict(modelRF, validating, type = "class")
-confusionMatrix(predictions, validating$classe)
+predictValidating <- predict(modelRF, validating, type = "class")
+cfMatrix <- confusionMatrix(predictValidating, validating$classe)
+print(cfMatrix)
 ```
 
-## Conclusions
+The confusion matrix above shows that the accuracy of our model is `r round(cfMatrix$overall[1] * 100, 2)`%.   
+The figure below shows the error versus number of trees:
+
+```{r}
+plot(modelRF)
+```
+
+## 5. Predictions
+
+Finally, we will make predictions about the outcome of *classe* variable, using the *testing* dataset.
+
+```{r}
+predictTesting <- predict(modelRF, testing, type = "class")
+print(predictTesting)
+```
