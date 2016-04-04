@@ -1,4 +1,5 @@
-Practical Machine Learning Project - Wearable Computing
+**Practical Machine Learning Project - Wearable Computing**
 
-Code file: index.Rmd
-HTML page: index.html
+**Code file:** index.Rmd
+
+**HTML page:** index.html
