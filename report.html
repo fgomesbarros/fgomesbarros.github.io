@@ -122,15 +122,25 @@ $(document).ready(function () {
 <p>The goal of your project is to predict the manner in which they did the exercise. This is the “classe” variable in the training set.</p>
 <div id="r-packages" class="section level3">
 <h3>1.1 R Packages</h3>
+<<<<<<< HEAD
 <p>In this project, we will use <em>caret</em> and <em>randomForest</em> packages.</p>
+=======
+<p>In this project, we will use the following R packages: caret, randomForest, corrplot and rattle.</p>
+>>>>>>> 1caf6b1ecfca1498f98ec4e1a2a104408b554381
 <pre class="r"><code># Loads R packages
 library(caret)
 library(randomForest)</code></pre>
 </div>
 </div>
+<<<<<<< HEAD
 <div id="data-collection" class="section level2">
 <h2>2. Data Collection</h2>
 <p>First of all, we will download the data files, store them in the “data” folder and load datasets into the <em>training</em> and <em>testing</em> variables.</p>
+=======
+</div>
+<div id="data-collection" class="section level2">
+<h2>2. Data Collection</h2>
+>>>>>>> 1caf6b1ecfca1498f98ec4e1a2a104408b554381
 <pre class="r"><code># Sets variables
 trainingURL&lt;- &quot;https://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv&quot;
 testingURL &lt;- &quot;https://d396qusza40orc.cloudfront.net/predmachlearn/pml-testing.csv&quot;
@@ -145,6 +155,7 @@ testingFile &lt;- &quot;./data/pml-testing.csv&quot;
 #   download.file(trainingURL, destfile = trainingFile, method=&quot;curl&quot;)
 # }
 # if (!file.exists(testing.file)) {
+<<<<<<< HEAD
 #   download.file(testingURL, destfile = testingFile, method=&quot;curl&quot;)
 # }
 
@@ -156,21 +167,42 @@ testing &lt;- read.csv(file = testingFile, na.strings=c(&quot;NA&quot;,&quot;#DI
 
 # Get datasets dimensions
 dim(training)</code></pre>
+=======
+#   download.file(testing.url, destfile=testing.file, method=&quot;curl&quot;)
+# }
+
+# Reads rawdata files
+training.raw &lt;- read.csv(file = training.file, na.strings=c(&quot;NA&quot;,&quot;#DIV/0!&quot;,&quot;&quot;), 
+                         stringsAsFactors =  FALSE)
+testing.raw &lt;- read.csv(file = testing.file, na.strings=c(&quot;NA&quot;,&quot;#DIV/0!&quot;,&quot;&quot;), 
+                        stringsAsFactors =  FALSE)
+
+# Get datasets dimensions
+dim(training.raw)</code></pre>
+>>>>>>> 1caf6b1ecfca1498f98ec4e1a2a104408b554381
 <pre><code>## [1] 19622   160</code></pre>
 <pre class="r"><code>dim(testing)</code></pre>
 <pre><code>## [1]  20 160</code></pre>
 <p>The <em>training</em> dataset contains 160 variables and 19622 observations, while the <em>testing</em> dataset contains 160 variables too, but less observations: 20.</p>
 <p>The variable <em>classe</em> is the outcome to be predicted by the model. It has five possible values:</p>
+<<<<<<< HEAD
 <pre class="r"><code>unique(training$classe)</code></pre>
+=======
+<pre class="r"><code>unique(training.raw$classe)</code></pre>
+>>>>>>> 1caf6b1ecfca1498f98ec4e1a2a104408b554381
 <pre><code>## [1] &quot;A&quot; &quot;B&quot; &quot;C&quot; &quot;D&quot; &quot;E&quot;</code></pre>
 </div>
 <div id="data-preparation-and-exploration" class="section level2">
 <h2>3. Data Preparation and Exploration</h2>
+<<<<<<< HEAD
 <p>Now, it’s time to prepare and explore the collected data, cleaning and preprocessing it in order to be ready for modeling.</p>
+=======
+>>>>>>> 1caf6b1ecfca1498f98ec4e1a2a104408b554381
 <div id="cleaning-data" class="section level3">
 <h3>3.1 Cleaning Data</h3>
 <p><strong>a) Training dataset</strong></p>
 <pre class="r"><code># Removes variables which don't correspond to accelerometer measurements.
+<<<<<<< HEAD
 unusedCol &lt;- grepl(&quot;^X|user|timestamp|window&quot;, names(training))
 training &lt;- training[, !unusedCol]
 
@@ -178,6 +210,13 @@ training &lt;- training[, !unusedCol]
 training &lt;- training[, colSums(is.na(training)) == 0]
 nearZero &lt;- nearZeroVar(x = training, saveMetrics = TRUE)
 training &lt;- training[, !nearZero$nzv]
+=======
+unused.col &lt;- grepl(&quot;^X|user|timestamp|window&quot;, names(training.raw))
+training &lt;- training.raw[, !unused.col]
+
+# Removes variables containing all NA missing values.
+training &lt;- training[, colSums(is.na(training)) == 0]
+>>>>>>> 1caf6b1ecfca1498f98ec4e1a2a104408b554381
 
 # Saves values of classe variable
 classe &lt;- training$classe
@@ -194,15 +233,22 @@ training$classe &lt;- factor(classe)
 # Gets the dimension of dataset
 dim(training)</code></pre>
 <pre><code>## [1] 19622    53</code></pre>
+<<<<<<< HEAD
 <p>Now, the number of variables of <em>training</em> dataset was reduced to: 53.</p>
 <p><strong>b) Testing dataset</strong></p>
 <p>Likewise, the set of variables of <em>testing</em> dataset will be reduced. It will remain only the same variables contained in <em>training</em> dataset, except for the <em>classe</em> variable.</p>
 <pre class="r"><code># Removes ununsed variables of testing dataset
 testing &lt;- testing[, names(testing) %in% names(training)]
+=======
+<p><strong>b) Testing dataset</strong></p>
+<pre class="r"><code># Removes ununsed variables of testing dataset
+testing &lt;- testing.raw[, names(testing.raw) %in% names(training)]
+>>>>>>> 1caf6b1ecfca1498f98ec4e1a2a104408b554381
 
 # Gets the dimension of dataset
 dim(testing)</code></pre>
 <pre><code>## [1] 20 52</code></pre>
+<<<<<<< HEAD
 <p>The resultant number of variables of <em>testing</em> dataset was reduced to: 52.</p>
 </div>
 <div id="preprocessing-data" class="section level3">
@@ -248,10 +294,60 @@ head(training[, c(1:5, 53)])</code></pre>
 ## 5      1.35       3.33   -88.60                3         0.03
 ## 6     -5.92       1.59   -87.70                4         0.10</code></pre>
 <p>Now the datasets are ready for the next step: data modeling.</p>
+=======
+</div>
+<div id="preprocessing-data" class="section level3">
+<h3>3.2 Preprocessing data</h3>
+<pre class="r"><code># Sets seed
+set.seed(13173)
+
+# Normalizes data
+pre.proc &lt;- preProcess(training[, -53], method = c(&quot;center&quot;, &quot;scale&quot;))
+training &lt;- predict(pre.proc, training)
+testing &lt;- predict(pre.proc, testing)
+
+# Slices the training data
+in.train &lt;- createDataPartition(y = training$classe, p = 0.7, list = FALSE)
+
+# Creates a cross-validation set
+validating &lt;- training[-in.train, ] 
+dim(validating)</code></pre>
+<pre><code>## [1] 5885   53</code></pre>
+<pre class="r"><code># Recreates the training set, removing observations of validating set 
+training &lt;- training[in.train, ]
+dim(training)</code></pre>
+<pre><code>## [1] 13737    53</code></pre>
+<pre class="r"><code># Shows datasets heads
+head(training[, c(1:5, 53)])</code></pre>
+<pre><code>##   roll_belt pitch_belt   yaw_belt total_accel_belt gyros_belt_x classe
+## 1 -1.003935  0.3473953 -0.8739522         -1.07366   0.02697255      A
+## 2 -1.003935  0.3473953 -0.8739522         -1.07366   0.12343758      A
+## 4 -1.002820  0.3465005 -0.8739522         -1.07366   0.12343758      A
+## 5 -1.002820  0.3473953 -0.8739522         -1.07366   0.12343758      A
+## 6 -1.003298  0.3469479 -0.8739522         -1.07366   0.12343758      A
+## 9 -1.003617  0.3514220 -0.8739522         -1.07366   0.12343758      A</code></pre>
+<pre class="r"><code>head(validating[, c(1:5, 53)])</code></pre>
+<pre><code>##    roll_belt pitch_belt   yaw_belt total_accel_belt gyros_belt_x classe
+## 3  -1.003776  0.3473953 -0.8739522         -1.07366   0.02697255      A
+## 7  -1.003776  0.3482901 -0.8739522         -1.07366   0.12343758      A
+## 8  -1.003776  0.3500797 -0.8739522         -1.07366   0.12343758      A
+## 10 -1.003298  0.3518694 -0.8739522         -1.07366   0.17167009      A
+## 15 -1.003298  0.3532116 -0.8739522         -1.07366   0.02697255      A
+## 16 -1.002820  0.3509745 -0.8739522         -1.07366   0.02697255      A</code></pre>
+<pre class="r"><code>head(testing[, 1:5])</code></pre>
+<pre><code>##    roll_belt  pitch_belt    yaw_belt total_accel_belt gyros_belt_x
+## 1  0.9337461  1.19432812  0.06780959        1.1220673   -2.3846531
+## 2 -1.0101504  0.20422655 -0.81617538       -0.9444997   -0.2624225
+## 3 -1.0125408  0.06776881 -0.81197343       -0.8153392    0.2681351
+## 4  0.9656184 -1.87485252  1.81949698        0.7345860    0.5575302
+## 5 -1.0048915  0.13532658 -0.81302392       -1.0736601    0.1716701
+## 6 -1.1207476  0.05747856 -0.80356953       -0.9444997    0.5092977</code></pre>
+>>>>>>> 1caf6b1ecfca1498f98ec4e1a2a104408b554381
 </div>
 </div>
 <div id="data-modeling" class="section level2">
 <h2>4. Data Modeling</h2>
+<<<<<<< HEAD
 <p>We will use <em>Random Forest</em> algorithm to predict the outcomes of <em>classe</em> variable.</p>
 <pre class="r"><code>modelRF &lt;- randomForest(classe ~ ., data = training)
 predictValidating &lt;- predict(modelRF, validating, type = &quot;class&quot;)
@@ -301,6 +397,11 @@ print(predictTesting)</code></pre>
 <pre><code>##  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18 19 20 
 ##  B  A  B  A  A  E  D  B  A  A  B  C  B  A  E  E  A  B  B  B 
 ## Levels: A B C D E</code></pre>
+=======
+</div>
+<div id="conclusions" class="section level2">
+<h2>Conclusions</h2>
+>>>>>>> 1caf6b1ecfca1498f98ec4e1a2a104408b554381
 </div>
 
 

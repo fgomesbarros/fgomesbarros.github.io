@@ -19,7 +19,11 @@ The goal of your project is to predict the manner in which they did the exercise
 
 ### 1.1 R Packages 
 
+<<<<<<< HEAD
 In this project, we will use *caret* and *randomForest* packages.
+=======
+In this project, we will use the following R packages: caret, randomForest, corrplot and rattle.
+>>>>>>> 1caf6b1ecfca1498f98ec4e1a2a104408b554381
 ```{r, message=FALSE}
 # Loads R packages
 library(caret)
@@ -48,6 +52,7 @@ testingFile <- "./data/pml-testing.csv"
 # }
 
 # Reads rawdata files
+<<<<<<< HEAD
 training <- read.csv(file = trainingFile, na.strings=c("NA","#DIV/0!",""), 
                          stringsAsFactors =  FALSE)
 testing <- read.csv(file = testingFile, na.strings=c("NA","#DIV/0!",""), 
@@ -56,6 +61,16 @@ testing <- read.csv(file = testingFile, na.strings=c("NA","#DIV/0!",""),
 # Get datasets dimensions
 dim(training)
 dim(testing)
+=======
+training.raw <- read.csv(file = training.file, na.strings=c("NA","#DIV/0!",""), 
+                         stringsAsFactors =  FALSE)
+testing.raw <- read.csv(file = testing.file, na.strings=c("NA","#DIV/0!",""), 
+                        stringsAsFactors =  FALSE)
+
+# Get datasets dimensions
+dim(training.raw)
+dim(testing.raw)
+>>>>>>> 1caf6b1ecfca1498f98ec4e1a2a104408b554381
 ```
 
 The *training* dataset contains `r dim(training)[2]` variables and `r dim(training)[1]` observations, while the *testing* dataset contains `r dim(testing)[2]` variables too, but less observations: `r dim(testing)[1]`.
@@ -67,6 +82,7 @@ unique(training$classe)
 ```
 
 ## 3. Data Preparation and Exploration 
+<<<<<<< HEAD
 
 Now, it's time to prepare and explore the collected data, cleaning and preprocessing it in order to be ready for modeling.
 
@@ -82,6 +98,19 @@ training <- training[, !unusedCol]
 training <- training[, colSums(is.na(training)) == 0]
 nearZero <- nearZeroVar(x = training, saveMetrics = TRUE)
 training <- training[, !nearZero$nzv]
+=======
+
+### 3.1 Cleaning Data
+
+**a) Training dataset**
+```{r}
+# Removes variables which don't correspond to accelerometer measurements.
+unused.col <- grepl("^X|user|timestamp|window", names(training.raw))
+training <- training.raw[, !unused.col]
+
+# Removes variables containing all NA missing values.
+training <- training[, colSums(is.na(training)) == 0]
+>>>>>>> 1caf6b1ecfca1498f98ec4e1a2a104408b554381
 
 # Saves values of classe variable
 classe <- training$classe
@@ -98,6 +127,7 @@ training$classe <- factor(classe)
 # Gets the dimension of dataset
 dim(training)
 ```
+<<<<<<< HEAD
 Now, the number of variables of *training* dataset was reduced to: `r dim(training)[2]`.
 
 **b) Testing dataset**
@@ -167,3 +197,45 @@ Finally, we will make predictions about the outcome of *classe* variable, using 
 predictTesting <- predict(modelRF, testing, type = "class")
 print(predictTesting)
 ```
+=======
+
+**b) Testing dataset**
+```{r}
+# Removes ununsed variables of testing dataset
+testing <- testing.raw[, names(testing.raw) %in% names(training)]
+
+# Gets the dimension of dataset
+dim(testing)
+```
+
+### 3.2 Preprocessing data
+```{r}
+# Sets seed
+set.seed(13173)
+
+# Normalizes data (the 53th column is the outcome)
+pre.proc <- preProcess(training[, -53], method = c("center", "scale"))
+training <- predict(pre.proc, training)
+testing <- predict(pre.proc, testing)
+
+# Slices the training data
+in.train <- createDataPartition(y = training$classe, p = 0.7, list = FALSE)
+
+# Creates a cross-validation set
+validating <- training[-in.train, ] 
+dim(validating)
+
+# Recreates the training set, removing observations of validating set 
+training <- training[in.train, ]
+dim(training)
+
+# Shows datasets heads
+head(training[, c(1:5, 53)])
+head(validating[, c(1:5, 53)])
+head(testing[, 1:5])
+```
+
+## 4. Data Modeling
+
+## Conclusions
+>>>>>>> 1caf6b1ecfca1498f98ec4e1a2a104408b554381
